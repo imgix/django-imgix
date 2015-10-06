@@ -6,8 +6,8 @@ env:
   - TOXENV=py26-django1.4
   - TOXENV=py27-django1.4
   - TOXENV=py27-django1.7
-  - TOXENV=py33-django1.7
+  - TOXENV=py34-django1.7
   - TOXENV=py27-django1.8
-  - TOXENV=py33-django1.8
+  - TOXENV=py34-django1.8
 script:
   - tox -e $TOXENV
