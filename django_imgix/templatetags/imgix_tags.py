@@ -1,7 +1,5 @@
 __author__ = 'daniel.kirov'
 
-from exceptions import AttributeError
-
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django import template
@@ -62,6 +60,8 @@ If you want to disable HTTPS support, put IMGIX_HTTPS = False in settings.py.
 
 This template tag returns a string that represents the Imgix URL for the image.
 """
+
+
 @register.simple_tag
 def get_imgix(image_url, **kwargs):
 
