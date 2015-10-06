@@ -11,6 +11,27 @@ import imgix
 
 register = template.Library()
 
+
+def get_settings_variables():
+    try:
+        use_https = settings.IMGIX_HTTPS
+    except AttributeError:
+        use_https = True
+    try:
+        sign_key = settings.IMGIX_SIGN_KEY
+    except AttributeError:
+        sign_key = None
+    try:
+        shard_strategy = settings.IMGIX_SHARD_STRATEGY
+    except AttributeError:
+        shard_strategy = None
+    try:
+        aliases = settings.IMGIX_ALIASES
+    except AttributeError:
+        aliases = None
+    return shard_strategy, sign_key, use_https, aliases
+
+
 """
 Template tag for returning an image from imgix.
 
@@ -53,41 +74,27 @@ def get_imgix(image_url, **kwargs):
 
     ### Build arguments
     args = {}
+
     # Get arguments from settings
-    try:
-        use_https = settings.IMGIX_HTTPS
-    except AttributeError:
-        use_https = True
-
-    try:
-        sign_key = settings.IMGIX_SIGN_KEY
-    except AttributeError:
-        sign_key = None
-
-    try:
-        shard_strategy = settings.IMGIX_SHARD_STRATEGY
-    except AttributeError:
-        shard_strategy = None
-
-    try:
-        aliases = settings.IMGIX_ALIASES
-    except AttributeError:
-        aliases = None
+    shard_strategy, sign_key, use_https, aliases = get_settings_variables()
 
     args['use_https'] = use_https
+
     if sign_key:
         args['sign_key'] = sign_key
+
     if shard_strategy:
         args['shard_strategy'] = shard_strategy
+
     # Imgix by default appends ?ixlib=python-<version_number> to the end
     # of the URL, but we don't want that.
     args['sign_with_library_version'] = False
+
     # Get builder instance
     builder = imgix.UrlBuilder(
         domains,
         **args
     )
-
 
     # Build the Imgix URL
     url = builder.create_url(image_url, **kwargs)
