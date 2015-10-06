@@ -188,7 +188,7 @@ class MyTest(TestCase):
                 )
             except ImproperlyConfigured as e:
                 self.assertEqual(
-                    e.message,
+                    str(e),
                     "Alias alias_two not found in IMGIX_ALIASES"
                 )
 
@@ -207,6 +207,6 @@ class MyTest(TestCase):
                 )
             except ImproperlyConfigured as e:
                 self.assertEqual(
-                    e.message,
+                    str(e),
                     "No aliases set. Please set IMGIX_ALIASES in settings.py"
                 )
