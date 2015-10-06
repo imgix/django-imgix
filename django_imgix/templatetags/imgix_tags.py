@@ -1,6 +1,6 @@
 __author__ = 'daniel.kirov'
 
-
+from exceptions import AttributeError
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -43,6 +43,7 @@ This template tag returns a string that represents the Imgix URL for the image.
 """
 @register.simple_tag
 def get_imgix(image_url, **kwargs):
+
     try:
         domains = settings.IMGIX_DOMAINS
     except:
@@ -55,18 +56,25 @@ def get_imgix(image_url, **kwargs):
     # Get arguments from settings
     try:
         use_https = settings.IMGIX_HTTPS
-    except:
+    except AttributeError:
         use_https = True
-    args['use_https'] = use_https
 
     try:
         sign_key = settings.IMGIX_SIGN_KEY
-    except:
+    except AttributeError:
         sign_key = None
+
     try:
         shard_strategy = settings.IMGIX_SHARD_STRATEGY
-    except:
+    except AttributeError:
         shard_strategy = None
+
+    try:
+        aliases = settings.IMGIX_ALIASES
+    except AttributeError:
+        aliases = None
+
+    args['use_https'] = use_https
     if sign_key:
         args['sign_key'] = sign_key
     if shard_strategy:
@@ -79,6 +87,8 @@ def get_imgix(image_url, **kwargs):
         domains,
         **args
     )
+
+
     # Build the Imgix URL
     url = builder.create_url(image_url, **kwargs)
     return url
