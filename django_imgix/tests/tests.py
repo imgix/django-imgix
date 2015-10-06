@@ -1,6 +1,7 @@
 from django.template import Context, Template
 from django.test import TestCase
 from django.conf import settings
+from django.core.exceptions import ImproperlyConfigured
 
 class MyTest(TestCase):
     def render_template(self, string, context=None):
@@ -90,3 +91,122 @@ class MyTest(TestCase):
                 "https://test1.imgix.net/media/image/image_0001.jpg?s=3ffb2810efc98cca7de5cd9c8ee6aec1"
             )
 
+    def test_alias_as_unnamed_argument(self):
+
+        domains = 'test1.imgix.net'
+        aliases = {
+            'alias_one': {'w': 150, 'h': 350, 'auto': 'format'},
+        }
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=aliases):
+            rendered = self.render_template(
+                "{% load imgix_tags %}"
+                "{% get_imgix 'media/image/image_0001.jpg' 'alias_one' %}"
+            )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+            )
+
+    def test_alias_as_named_argument(self):
+
+        domains = 'test1.imgix.net'
+        aliases = {
+            'alias_one': {'w': 150, 'h': 350, 'auto': 'format'},
+        }
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=aliases):
+            rendered = self.render_template(
+                "{% load imgix_tags %}"
+                "{% get_imgix 'media/image/image_0001.jpg' alias='alias_one' %}"
+            )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+            )
+
+    # Test that if there is a valid alias specified all other arguments will
+    # be ignored
+    def test_alias_as_unnamed_argument_with_other_arguments(self):
+
+        domains = 'test1.imgix.net'
+        aliases = {
+            'alias_one': {'w': 150, 'h': 350, 'auto': 'format'},
+        }
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=aliases):
+            rendered = self.render_template(
+                "{% load imgix_tags %}"
+                "{% get_imgix 'media/image/image_0001.jpg' 'alias_one' "
+                "w=111 h=222 auto='override' %}"
+            )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+            )
+
+
+    # Test that if there is a valid alias specified all other arguments will
+    # be ignored
+    def test_alias_as_named_argument_with_other_arguments(self):
+
+        domains = 'test1.imgix.net'
+        aliases = {
+            'alias_one': {'w': 150, 'h': 350, 'auto': 'format'},
+        }
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=aliases):
+            rendered = self.render_template(
+                "{% load imgix_tags %}"
+                "{% get_imgix 'media/image/image_0001.jpg' alias='alias_one' "
+                "w=111 h=222 auto='override' %}"
+            )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+            )
+
+
+    def test_missing_alias_gives_useful_error(self):
+
+        domains = 'test1.imgix.net'
+        aliases = {
+            'alias_one': {'w': 150, 'h': 350, 'auto': 'format'},
+        }
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=aliases):
+            try:
+                rendered = self.render_template(
+                    "{% load imgix_tags %}"
+                    "{% get_imgix 'media/image/image_0001.jpg' alias='alias_two' "
+                    "w=111 h=222 auto='override' %}"
+                )
+            except ImproperlyConfigured as e:
+                self.assertEqual(
+                    e.message,
+                    "Alias alias_two not found in IMGIX_ALIASES"
+                )
+
+
+    def test_no_aliases_specified_gives_useful_error(self):
+
+        domains = 'test1.imgix.net'
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_ALIASES=None):
+            try:
+                rendered = self.render_template(
+                    "{% load imgix_tags %}"
+                    "{% get_imgix 'media/image/image_0001.jpg' alias='alias_two' "
+                    "w=111 h=222 auto='override' %}"
+                )
+            except ImproperlyConfigured as e:
+                self.assertEqual(
+                    e.message,
+                    "No aliases set. Please set IMGIX_ALIASES in settings.py"
+                )

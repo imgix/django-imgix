@@ -30,6 +30,24 @@ def get_settings_variables():
     return shard_strategy, sign_key, use_https, aliases
 
 
+def get_kwargs(alias, aliases, kwargs):
+
+    # Check if we are using an alias or inline arguments
+    if not alias:
+        return kwargs
+    elif not aliases:
+        raise ImproperlyConfigured(
+            "No aliases set. Please set IMGIX_ALIASES in settings.py"
+        )
+    elif alias not in aliases:
+        raise ImproperlyConfigured(
+            "Alias {0} not found in IMGIX_ALIASES".format(alias)
+        )
+    else:
+        return aliases[alias]
+
+
+
 """
 Template tag for returning an image from imgix.
 
@@ -63,7 +81,7 @@ This template tag returns a string that represents the Imgix URL for the image.
 
 
 @register.simple_tag
-def get_imgix(image_url, **kwargs):
+def get_imgix(image_url, alias=None, **kwargs):
 
     try:
         domains = settings.IMGIX_DOMAINS
@@ -96,6 +114,8 @@ def get_imgix(image_url, **kwargs):
         **args
     )
 
+    arguments = get_kwargs(alias, aliases, kwargs)
+
     # Build the Imgix URL
-    url = builder.create_url(image_url, **kwargs)
+    url = builder.create_url(image_url, **arguments)
     return url
