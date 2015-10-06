@@ -3,3 +3,4 @@
 .tox
 django_imgix.egg-info
 .coverage
+
