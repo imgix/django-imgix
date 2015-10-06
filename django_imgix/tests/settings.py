@@ -20,7 +20,6 @@ INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.admin',
     'django_imgix',
-    'django_imgix.tests.apps.DjangoImgixTestConfig',
 ]
 
 MIDDLEWARE_CLASSES = (
