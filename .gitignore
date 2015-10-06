@@ -1,2 +1,5 @@
 # Python bytecode
 *.py[co]
+.tox
+django_imgix.egg-info
+.coverage
