@@ -1,5 +1,7 @@
 __author__ = 'daniel.kirov'
 
+from urlparse import urlparse
+
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django import template
@@ -115,6 +117,9 @@ def get_imgix(image_url, alias=None, **kwargs):
     )
 
     arguments = get_kwargs(alias, aliases, kwargs)
+
+    # Take only the relative path of the URL
+    image_url = urlparse(image_url).path
 
     # Build the Imgix URL
     url = builder.create_url(image_url, **arguments)
