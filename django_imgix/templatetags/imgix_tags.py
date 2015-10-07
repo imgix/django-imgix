@@ -1,6 +1,10 @@
 __author__ = 'daniel.kirov'
 
-from urlparse import urlparse
+try:
+    from urlparse import urlparse
+except ImportError:
+    # Python 3 location
+    from urllib.parse import urlparse
 
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
