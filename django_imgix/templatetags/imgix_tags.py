@@ -1,11 +1,14 @@
 __author__ = 'daniel.kirov'
 
+import re
 try:
     from urlparse import urlparse
 except ImportError:
     # Python 3 location
     from urllib.parse import urlparse
 
+from django.utils import six
+from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django import template
@@ -15,6 +18,18 @@ import imgix
 
 register = template.Library()
 
+WH_PATTERN = re.compile(r'(\d+)x(\d+)$')
+
+FM_PATTERN = re.compile(r'([^\?]+)')
+FM_MATCHES = {
+    'jpg': 'jpg',
+    'jpeg': 'jpg',
+    'png': 'png',
+    'gif': 'gif',
+    'jp2': 'jp2',
+    'jxr': 'jxr',
+    'webp': 'webp',
+}
 
 def get_settings_variables():
     try:
@@ -33,7 +48,11 @@ def get_settings_variables():
         aliases = settings.IMGIX_ALIASES
     except AttributeError:
         aliases = None
-    return shard_strategy, sign_key, use_https, aliases
+    try:
+        format_detect = settings.IMGIX_DETECT_FORMAT
+    except AttributeError:
+        format_detect = False
+    return shard_strategy, sign_key, use_https, aliases, format_detect
 
 
 def get_kwargs(alias, aliases, kwargs):
@@ -53,6 +72,18 @@ def get_kwargs(alias, aliases, kwargs):
         return aliases[alias]
 
 
+def get_fm(image_url):
+    image_end = image_url.split('.')[-1]
+    m = FM_PATTERN.match(image_end)
+    if m:
+        fm = m.group(1)
+        try:
+            format = FM_MATCHES[fm]
+            return format
+        except:
+            return False
+    else:
+        return False
 
 """
 Template tag for returning an image from imgix.
@@ -87,7 +118,7 @@ This template tag returns a string that represents the Imgix URL for the image.
 
 
 @register.simple_tag
-def get_imgix(image_url, alias=None, **kwargs):
+def get_imgix(image_url, alias=None, wh=None, **kwargs):
 
     try:
         domains = settings.IMGIX_DOMAINS
@@ -100,7 +131,8 @@ def get_imgix(image_url, alias=None, **kwargs):
     args = {}
 
     # Get arguments from settings
-    shard_strategy, sign_key, use_https, aliases = get_settings_variables()
+    shard_strategy, sign_key, use_https, aliases,\
+        format_detect = get_settings_variables()
 
     args['use_https'] = use_https
 
@@ -119,6 +151,30 @@ def get_imgix(image_url, alias=None, **kwargs):
         domains,
         **args
     )
+
+    # Has the wh argument been passed? If yes,
+    # set w and h arguments accordingly
+    if wh:
+        size = wh
+        if isinstance(size, six.string_types):
+            m = WH_PATTERN.match(size)
+            if m:
+                w = int(m.group(1))
+                h = int(m.group(2))
+                if w > 0:
+                    kwargs['w'] = int(m.group(1))
+                if h > 0:
+                    kwargs['h'] = int(m.group(2))
+            else:
+                raise TemplateSyntaxError(
+                    "%r is not a valid size." % size
+                )
+
+    # Is format detection on? If yes, use the appropriate image format.
+    if format_detect and 'fm' not in kwargs:
+        fm = get_fm(image_url)
+        if fm:
+            kwargs['fm'] = fm
 
     arguments = get_kwargs(alias, aliases, kwargs)
 
