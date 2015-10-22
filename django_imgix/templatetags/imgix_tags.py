@@ -171,12 +171,13 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
                 )
 
     # Is format detection on? If yes, use the appropriate image format.
-    if format_detect and 'fm' not in kwargs:
-        fm = get_fm(image_url)
-        if fm:
-            kwargs['fm'] = fm
 
     arguments = get_kwargs(alias, aliases, kwargs)
+
+    if format_detect and 'fm' not in arguments:
+        fm = get_fm(image_url)
+        if fm:
+            arguments['fm'] = fm
 
     # Take only the relative path of the URL
     image_url = urlparse(image_url).path
