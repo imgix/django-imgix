@@ -94,10 +94,15 @@ For a full list of supported parameters, see [here](https://www.imgix.com/docs/r
 
 There is a special argument, `wh=WIDTHxHEIGHT`, which is made specifically so that transition from other image processing libraries such as **easy_thumbnails** is easier.
 For example,
+
 `{% get_imgix '/media/images/dsc_0001.jpg' wh='1280x720' %}`
+
 is the same as saying
+
 `{% get_imgix '/media/images/dsc_0001.jpg' w=1280 h=720 %}`
+
 which resolves to
+
 `http://my-domain.imgix.net/media/images/dsc_0001.jpg?h=720&w=1280`
 
 #### **Aliases**
