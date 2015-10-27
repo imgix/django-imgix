@@ -34,7 +34,10 @@ Configuration
 -------------
 There are a few settings you can use to configure how django-imgix works:
 
-- **IMGIX_DOMAINS** (*required*) - Give the domain name, or list of domain names, that you have registered with Imgix:
+**IMGIX_DOMAINS** (*required*)
+
+Give the domain name, or list of domain names, that you have registered with Imgix:
+
 ```
 IMGIX_DOMAINS = 'my-domain.imgix.net'
 ...
@@ -47,9 +50,13 @@ IMGIX_DOMAINS = [
 	]
 ```
 
-- **IMGIX_HTTPS** - Boolean value, defaults to `False` if not specified. If set to `True` it enables HTTPS support.
+**IMGIX_HTTPS**
 
-- **IMGIX_SIGN_KEY**  - If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.com account. This will generate a secret key that you need to specify here, e.g.
+Boolean value, defaults to `False` if not specified. If set to `True` it enables HTTPS support.
+
+**IMGIX_SIGN_KEY**
+
+If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.com account. This will generate a secret key that you need to specify here, e.g.
 
 ```
 IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
@@ -60,7 +67,9 @@ This will make a hash from the image url and all parameters that you have suppli
 `https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
 
 
-- **IMGIX_DETECT_FORMAT** - Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=image_extension` attribute to the image url, where `image_extension`  is one of the formats listed [here](https://www.imgix.com/docs/reference/format#param-fm "Imgix fm parameter")
+**IMGIX_DETECT_FORMAT**
+
+Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=image_extension` attribute to the image url, where `image_extension`  is one of the formats listed [here](https://www.imgix.com/docs/reference/format#param-fm "Imgix fm parameter")
 
 
 Example:
@@ -76,7 +85,9 @@ will produce
 Currently supported image formats for IMGIX_DETECT_FORMAT are jpg, jpeg, png, gif, jp2, jxr and webp.
 
 
-- **IMGIX_ALIASES** - Read about aliases in the **Usage** section below.
+**IMGIX_ALIASES**
+
+Read about aliases in the **Usage** section below.
 
 
 ----------
