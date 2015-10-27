@@ -56,7 +56,8 @@ IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
 ```
 
 This will make a hash from the image url and all parameters that you have supplied, which will be appended as a url parameter `s=hash` to the image, e.g.
-``https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
+
+`https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
 
 
 **IMGIX_DETECT_FORMAT** - Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=image_extension` attribute to the image url, where `image_extension`  is one of the formats listed [here](https://www.imgix.com/docs/reference/format#param-fm "Imgix fm parameter")
