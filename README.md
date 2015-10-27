@@ -3,7 +3,7 @@ Django imgix
 
 [![Build Status](https://travis-ci.org/pancentric/django-imgix.png?branch=master)](https://travis-ci.org/pancentric/django-imgix)
 
-A simple Django application for creating imgix formatted image links in your templates
+A simple Django application for creating [Imgix](https://www.imgix.com/ "Imgix") formatted image links in your templates
 
 
 Installation
@@ -34,7 +34,7 @@ Configuration
 -------------
 There are a few settings you can use to configure how django-imgix works:
 
-**IMGIX_DOMAINS** (*required*) - Give the domain name, or list of domain names, that you have registered with Imgix.net:
+**IMGIX_DOMAINS** (*required*) - Give the domain name, or list of domain names, that you have registered with Imgix:
 ```
 IMGIX_DOMAINS = 'my-domain.imgix.net'
 ...
@@ -49,7 +49,7 @@ IMGIX_DOMAINS = [
 
 **IMGIX_HTTPS** - Boolean value, defaults to `False` if not specified. If set to `True` it enables HTTPS support.
 
-**IMGIX_SIGN_KEY**  - If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.net account. This will generate a secret key that you need to specify here, e.g.
+**IMGIX_SIGN_KEY**  - If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.com account. This will generate a secret key that you need to specify here, e.g.
 
 ```
 IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
@@ -85,12 +85,14 @@ Currently supported image formats for IMGIX_DETECT_FORMAT are jpg, jpeg, png, gi
 Usage
 -----
 
-In your template:
+Django-imgix's functionality comes in the form of a template tag, `get_imgix`, that gets an image url as its first argument and then an N number of optional arguments:
 
 ```
 {% load imgix_tags %}
 <img src="{% get_imgix 'image_url' key=value ... %}"/>
 ```
+
+Your `'image_url'` should be a relative url, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
 
 You can add as many `key=value` pairs as you want. Each `key=value` pair results in a url parameter
 that Imgix can recognise and use to generate your thumbnail.
