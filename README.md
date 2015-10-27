@@ -92,7 +92,7 @@ Django-imgix's functionality comes in the form of a template tag, `get_imgix`, t
 <img src="{% get_imgix 'image_url' key=value ... %}"/>
 ```
 
-Your `'image_url'` should be a relative url, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
+Your `'image_url'` should be a relative URL, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
 
 You can add as many `key=value` pairs as you want. Each `key=value` pair results in a url parameter
 that Imgix can recognise and use to generate your thumbnail.
