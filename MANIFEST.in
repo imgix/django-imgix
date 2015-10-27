@@ -2,5 +2,3 @@ include LICENSE
 include AUTHORS
 include README.md
 include CHANGELOG.md
-recursive-include django_imgix/ *
-recursive-include docs/ *
