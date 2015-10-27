@@ -55,6 +55,10 @@ IMGIX_DOMAINS = [
 IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
 ```
 
+This will make a hash from the image url and all parameters that you have supplied, which will be appended as a url parameter `s=hash` to the image, e.g.
+``https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
+
+
 **IMGIX_DETECT_FORMAT** - Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=image_extension` attribute to the image url, where `image_extension`  is one of the formats listed [here](https://www.imgix.com/docs/reference/format#param-fm "Imgix fm parameter")
 
 
@@ -65,7 +69,7 @@ Example:
 ```
 will produce
 
-` https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280`
+`https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280`
 
 
 Currently supported image formats for IMGIX_DETECT_FORMAT are jpg, jpeg, png, gif, jp2, jxr and webp.
@@ -92,6 +96,7 @@ that Imgix can recognise and use to generate your thumbnail.
 
 For a full list of supported parameters, see [here](https://www.imgix.com/docs/reference/ "Imgix API reference")
 
+
 There is a special argument, `wh=WIDTHxHEIGHT`, which is made specifically so that transition from other image processing libraries such as **easy_thumbnails** is easier.
 For example,
 
@@ -104,6 +109,14 @@ is the same as saying
 which resolves to
 
 `http://my-domain.imgix.net/media/images/dsc_0001.jpg?h=720&w=1280`
+
+`wh` will take precedence over `w` and `h` arguments, unless you use a 0 as one of the values in `wh`, e.g.
+
+`{% get_imgix '/media/images/dsc_0001.jpg' wh='1280x0' w='777' h='555' %}`
+
+will result in
+
+`http://my-domain.imgix.net/media/images/dsc_0001.jpg?h=555&w=1280`
 
 #### **Aliases**
 
@@ -125,4 +138,7 @@ Then, in your template, either simply provide the alias name as the first unname
 ... or ...
 <img src="{% get_imgix 'image_url' alias='alias_one' %}"/>
 ```
+
+Providing an alias means that any other arguments will be ignored.
+
 
