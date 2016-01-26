@@ -183,5 +183,5 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
     image_url = urlparse(image_url).path
 
     # Build the Imgix URL
-    url = builder.create_url(image_url, **arguments)
+    url = builder.create_url(image_url, arguments)
     return url
