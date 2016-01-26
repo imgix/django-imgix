@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='django-imgix',
-    version='0.1',
+    version='0.2',
     packages=find_packages(),
     include_package_data=True,
     license='BSD License',  # example license
@@ -20,7 +20,7 @@ setup(
     author_email='devops@pancentric.com',
     install_requires=[
         'django>=1.4.0',
-        'imgix>=0.2.0',
+        'imgix>=1.0.0',
     ],
     classifiers=[
         'Environment :: Web Environment',
