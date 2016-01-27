@@ -14,7 +14,7 @@ This app requires Django > 1.4 and imgix>0.1
 
 
 1. Run ```  pip install django-imgix  ```
-2. Add ``` 'django-imgix' ``` to your ``` INSTALLED_APPS ```:
+2. Add ``` 'django_imgix' ``` to your ``` INSTALLED_APPS ```:
 
 
 
@@ -22,7 +22,7 @@ This app requires Django > 1.4 and imgix>0.1
 ```
 	INSTALLED_APPS = (
 		...
-		'django-imgix',
+		'django_imgix',
 	)
 ```
 
