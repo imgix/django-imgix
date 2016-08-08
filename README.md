@@ -52,7 +52,7 @@ IMGIX_DOMAINS = [
 
 **IMGIX_HTTPS**
 
-Boolean value, defaults to `False` if not specified. If set to `True` it enables HTTPS support.
+Boolean value, defaults to `True` if not specified. If set to `False` it disables HTTPS support.
 
 **IMGIX_SIGN_KEY**
 
