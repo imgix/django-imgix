@@ -54,6 +54,7 @@ IMGIX_DOMAINS = [
 
 Boolean value, defaults to `True` if not specified. If set to `False` it disables HTTPS support.
 
+
 **IMGIX_SIGN_KEY**
 
 If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.com account. This will generate a secret key that you need to specify here, e.g.
@@ -65,6 +66,12 @@ IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
 This will make a hash from the image url and all parameters that you have supplied, which will be appended as a url parameter `s=hash` to the image, e.g.
 
 `https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
+
+
+**IMGIX_WEB_PROXY_SOURCE**
+
+Boolean value, defaults to `False` if not specified. If set to `True` image urls will be generated using the full original image url, as needed for a Web Proxy Source.
+Note that Imgix requires all your urls to be signed if you are using a Web Proxy Source (do that by specifying **IMGIX_SIGN_KEY**).
 
 
 **IMGIX_DETECT_FORMAT**
