@@ -298,11 +298,27 @@ class GeneralImgixTests(TestCase):
                 "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=222&w=111"
             )
 
+    def test_web_proxy_setting_keeps_full_url(self):
+        domains = 'test1.imgix.net'
+        key = '1234key'
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_DETECT_FORMAT=True,
+                           IMGIX_SIGN_KEY=key):
+            rendered = render_template(
+                "{% load imgix_tags %}"
+                "{% get_imgix 'i.imgur.net/media/image/image_0001.jpg' fm='png' %}"
+            )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/i.imgur.net/media/image/image_0001.jpg?fm=png&s=e999c394eb69bad44b3f605fcf96f4bf"
+            )
+
 
 # Tests related to the IMGIX_DETECT_FORMAT option
 class DetectFormatTests(TestCase):
-    
-    
+
+
     def test_jpg_format_is_automatically_recognised(self):
 
         domains = 'test1.imgix.net'
@@ -417,3 +433,5 @@ class DetectFormatTests(TestCase):
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
             )
+
+

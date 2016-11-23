@@ -52,7 +52,11 @@ def get_settings_variables():
         format_detect = settings.IMGIX_DETECT_FORMAT
     except AttributeError:
         format_detect = False
-    return shard_strategy, sign_key, use_https, aliases, format_detect
+    try:
+        web_proxy = settings.IMGIX_WEB_PROXY_SOURCE
+    except AttributeError:
+        web_proxy = False
+    return shard_strategy, sign_key, use_https, aliases, format_detect, web_proxy
 
 
 def get_kwargs(alias, aliases, kwargs):
@@ -132,7 +136,7 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
 
     # Get arguments from settings
     shard_strategy, sign_key, use_https, aliases,\
-        format_detect = get_settings_variables()
+        format_detect, web_proxy = get_settings_variables()
 
     args['use_https'] = use_https
 
@@ -179,8 +183,9 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
         if fm:
             arguments['fm'] = fm
 
-    # Take only the relative path of the URL
-    image_url = urlparse(image_url).path
+    # Take only the relative path of the URL if the source is not a Web Proxy Source
+    if not web_proxy:
+        image_url = urlparse(image_url).path
 
     # Build the Imgix URL
     url = builder.create_url(image_url, arguments)
