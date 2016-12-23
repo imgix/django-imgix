@@ -31,49 +31,103 @@ FM_MATCHES = {
     'webp': 'webp',
 }
 
-def get_settings_variables():
+
+def pick(keys, _dict):
+    """
+    Returns a new dictionary based on `_dict`,
+    restricting keys to those in the iterable `keys`.
+    """
+
+    key_set = set(keys) & set(_dict.keys())
+
+    return dict((key, _dict[key]) for key in key_set)
+
+
+def omit(keys, _dict):
+    """
+    Returns a new dictionary based on `_dict`,
+    restricting keys to those not in the iterable `keys`.
+    """
+
+    key_set = set(_dict.keys()) - set(keys)
+
+    return dict((key, _dict[key]) for key in key_set)
+
+
+def merge_dicts(*dicts):
+    merged = {}
+    for _dict in dicts:
+        merged.update(_dict)
+    return merged
+
+
+def get_settings():
     try:
-        use_https = settings.IMGIX_HTTPS
+        _settings = {
+            'domains': getattr(settings, 'IMGIX_DOMAINS'),
+            'use_https': getattr(settings, 'IMGIX_HTTPS', True),
+            'sign_key': getattr(settings, 'IMGIX_SIGN_KEY', None),
+            'shard_strategy': getattr(settings, 'IMGIX_SHARD_STRATEGY', None),
+            'aliases': getattr(settings, 'IMGIX_ALIASES', None),
+            'format_detect': getattr(settings, 'IMGIX_DETECT_FORMAT', False),
+            'web_proxy': getattr(settings, 'IMGIX_WEB_PROXY_SOURCE', False),
+            'sign_with_library_version': getattr(settings, 'IMGIX_SIGN_WITH_LIBRARY_VERSION', False)
+        }
     except AttributeError:
-        use_https = True
+        raise ImproperlyConfigured('Missing IMGIX_DOMAINS setting.')
+
+    # If these settings below are not present, we want to omit it the key
+    # so that `imgix-python` applies it's default.
+
     try:
-        sign_key = settings.IMGIX_SIGN_KEY
+        _settings['sign_mode'] = settings.IMGIX_SIGN_MODE
     except AttributeError:
-        sign_key = None
+        pass
+
     try:
-        shard_strategy = settings.IMGIX_SHARD_STRATEGY
+        _settings['shard_strategy'] = settings.IMGIX_SHARD_STRATEGY
     except AttributeError:
-        shard_strategy = None
+        pass
+
+    return _settings
+
+
+IMGIX_URL_BUILDER_KWARGS = frozenset([
+    'domains',
+    'sign_mode',
+    'sign_with_library_version',
+    'use_https',
+    'sign_key',
+    'shard_strategy',
+])
+
+DJANGO_IMGIX_KWARGS = frozenset([
+    'format_detect',
+    'alias',
+    'aliases',
+    'web_proxy',
+])
+
+
+def get_alias(alias):
     try:
         aliases = settings.IMGIX_ALIASES
     except AttributeError:
-        aliases = None
-    try:
-        format_detect = settings.IMGIX_DETECT_FORMAT
-    except AttributeError:
-        format_detect = False
-    try:
-        web_proxy = settings.IMGIX_WEB_PROXY_SOURCE
-    except AttributeError:
-        web_proxy = False
-    return shard_strategy, sign_key, use_https, aliases, format_detect, web_proxy
+        aliases_set = False
+    else:
+        aliases_set = True
 
-
-def get_kwargs(alias, aliases, kwargs):
-
-    # Check if we are using an alias or inline arguments
-    if not alias:
-        return kwargs
-    elif not aliases:
+    if aliases_set and not aliases:
         raise ImproperlyConfigured(
             "No aliases set. Please set IMGIX_ALIASES in settings.py"
         )
-    elif alias not in aliases:
+
+    if not aliases or alias not in aliases:
         raise ImproperlyConfigured(
             "Alias {0} not found in IMGIX_ALIASES".format(alias)
         )
-    else:
-        return aliases[alias]
+
+    return aliases[alias]
 
 
 def get_fm(image_url):
@@ -123,70 +177,59 @@ This template tag returns a string that represents the Imgix URL for the image.
 
 @register.simple_tag
 def get_imgix(image_url, alias=None, wh=None, **kwargs):
+    _settings = get_settings()
+    merged_settings = merge_dicts(_settings, kwargs)
 
-    try:
-        domains = settings.IMGIX_DOMAINS
-    except:
-        raise ImproperlyConfigured(
-            "IMGIX_DOMAINS not set in settings.py"
-        )
+    if alias:
+        merged_settings.update(get_alias(alias))
 
-    ### Build arguments
-    args = {}
-
-    # Get arguments from settings
-    shard_strategy, sign_key, use_https, aliases,\
-        format_detect, web_proxy = get_settings_variables()
-
-    args['use_https'] = use_https
-
-    if sign_key:
-        args['sign_key'] = sign_key
-
-    if shard_strategy:
-        args['shard_strategy'] = shard_strategy
-
-    # Imgix by default appends ?ixlib=python-<version_number> to the end
-    # of the URL, but we don't want that.
-    args['sign_with_library_version'] = False
-
+    builder_kwargs = pick(IMGIX_URL_BUILDER_KWARGS, merged_settings)
+    create_url_opts = omit(IMGIX_URL_BUILDER_KWARGS | DJANGO_IMGIX_KWARGS, merged_settings)
     # Get builder instance
-    builder = imgix.UrlBuilder(
-        domains,
-        **args
-    )
+    builder = imgix.UrlBuilder(**builder_kwargs)
 
     # Has the wh argument been passed? If yes,
     # set w and h arguments accordingly
     if wh:
-        size = wh
-        if isinstance(size, six.string_types):
-            m = WH_PATTERN.match(size)
-            if m:
-                w = int(m.group(1))
-                h = int(m.group(2))
-                if w > 0:
-                    kwargs['w'] = int(m.group(1))
-                if h > 0:
-                    kwargs['h'] = int(m.group(2))
-            else:
-                raise TemplateSyntaxError(
-                    "%r is not a valid size." % size
-                )
+        create_url_opts.update(parse_wh(wh))
 
     # Is format detection on? If yes, use the appropriate image format.
 
-    arguments = get_kwargs(alias, aliases, kwargs)
-
-    if format_detect and 'fm' not in arguments:
+    if merged_settings['format_detect'] and 'fm' not in create_url_opts:
         fm = get_fm(image_url)
         if fm:
-            arguments['fm'] = fm
+            create_url_opts['fm'] = fm
 
     # Take only the relative path of the URL if the source is not a Web Proxy Source
-    if not web_proxy:
+    if not merged_settings['web_proxy']:
         image_url = urlparse(image_url).path
 
     # Build the Imgix URL
-    url = builder.create_url(image_url, arguments)
+    url = builder.create_url(image_url, create_url_opts)
     return url
+
+
+def parse_wh(wh):
+    size = wh
+    if not isinstance(size, six.string_types):
+        raise TemplateSyntaxError(
+            "Invalid argument type for 'wh': %s" % wh
+        )
+
+    m = WH_PATTERN.match(size)
+
+    if not m:
+        raise TemplateSyntaxError(
+            "%r is not a valid size." % size
+        )
+
+    w = int(m.group(1))
+    h = int(m.group(2))
+
+    result = {}
+    if w > 0:
+        result['w'] = w
+    if h > 0:
+        result['h'] = h
+
+    return result
