@@ -10,7 +10,7 @@ register = template.Library()
 @register.simple_tag
 def get_imgix(image_url, alias=None, wh=None, source=MAIN_SOURCE_KEY, **kwargs):
     """
-    Template tag tat returns an Imgix image URL.
+    Template tag that returns an Imgix image URL.
 
     :param image_url: the image URL that will be passed to Imgix
     :param alias: An optional alias name corresponding to a key in IMGIX_ALIASES setting.

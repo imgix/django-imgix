@@ -112,7 +112,7 @@ IMGIX_SOURCES = {
         'detect_format': True,
     },
     'proxy': {
-        'domains': ['test-proxy'.imgix.net],
+        'domains': ['test-proxy.imgix.net'],
         'sign_key': 'my-sign-key',
     }
 }
@@ -182,7 +182,7 @@ You can add as many `key=value` pairs as you want. There are three specially tre
 
     `http://my-domain.imgix.net/media/images/dsc_0001.jpg?h=555&w=1280`
 
-All other `key=value` pairs will results in a URL parameter that Imgix can recognise and use to generate your image.
+All other `key=value` pairs will result in a URL parameter that Imgix can recognise and use to generate your image.
 
 For a full list of supported parameters, see [here](https://www.imgix.com/docs/reference/ "Imgix API reference")
 
