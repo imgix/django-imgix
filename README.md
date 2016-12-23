@@ -103,19 +103,42 @@ Read about aliases in the **Usage** section below.
 Usage
 -----
 
-Django-imgix's functionality comes in the form of a template tag, `get_imgix`, that gets an image url as its first argument and then an N number of optional arguments:
+**Plain function `get_imgix_url`**
+
+You can conveniently generate Imgix URLs based on the project settings you've declared with `get_imgix_url`. It takes an image URL as the first argument, and an arbitrary number of optional keyword arguments.
+
+```python
+from django_imgix import get_imgix_url
+
+imgix_url = get_imgix_url('image_url', key1='value1', key2='value2')
+```
+
+If you are using a Web Proxy source, pass an absolute URL for `'image_url'`. Otherwise `'image_url'` should be a relative URL, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
+
+You can add as many `key=value` pairs as you want. Keys that correspond to `django-imgix` settings will override them. They are:
+
+- `use_https` overrides `IMGIX_HTTPS`
+- `web_proxy` overrides `IMGIX_WEB_PROXY`
+- `domains` overrides `IMGIX_DOMAINS`
+- `sign_key` overrides `IMGIX_SIGN_KEY`
+- `shard_strategy` overrides `IMGIX_SHARD_STRATEGY`
+- `aliases` overrides `IMGIX_ALIASES`
+- `format_detect` overrides `IMGIX_FORMAT_DETECT`
+
+All other `key=value` pairs will results in a url parameter that Imgix can recognise and use to generate your image.
+
+For a full list of supported parameters, see [here](https://www.imgix.com/docs/reference/ "Imgix API reference")
+
+**Template tag `get_imgix`**
+
+To use the template tag, load the tags first: `{% load imgix_tags %}`
+
+The template tag has the same parameters as `get_imgix_url`.
 
 ```
 {% load imgix_tags %}
 <img src="{% get_imgix 'image_url' key=value ... %}"/>
 ```
-
-Your `'image_url'` should be a relative URL, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
-
-You can add as many `key=value` pairs as you want. Each `key=value` pair results in a url parameter
-that Imgix can recognise and use to generate your thumbnail.
-
-For a full list of supported parameters, see [here](https://www.imgix.com/docs/reference/ "Imgix API reference")
 
 
 There is a special argument, `wh=WIDTHxHEIGHT`, which is made specifically so that transition from other image processing libraries such as **easy_thumbnails** is easier.
@@ -152,7 +175,7 @@ IMGIX_ALIASES = {
 
 ```
 
-Then, in your template, either simply provide the alias name as the first unnamed argument, or use `alias='alias_name'`:
+Then, in your template or function, either simply provide the alias name as the first unnamed argument, or use `alias='alias_name'`:
 ```
 {% load imgix_tags %}
 <img src="{% get_imgix 'image_url' 'alias_one' %}"/>
@@ -160,6 +183,4 @@ Then, in your template, either simply provide the alias name as the first unname
 <img src="{% get_imgix 'image_url' alias='alias_one' %}"/>
 ```
 
-Providing an alias means that any other arguments will be ignored.
-
-
+If you provide arguments in addition to `alias`, they will override that alias.
