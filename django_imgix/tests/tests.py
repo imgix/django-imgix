@@ -3,11 +3,14 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from imgix import UrlBuilder
+
 
 def render_template(string, context=None):
         context = context or {}
         context = Context(context)
         return Template(string).render(context)
+
 
 class GeneralImgixTests(TestCase):
     def render_template(self, string, context=None):
@@ -432,6 +435,30 @@ class DetectFormatTests(TestCase):
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
+            )
+
+
+    def test_override_web_proxy_setting(self):
+        domains = 'test1.imgix.net'
+        image_url = 'http://www.example.com.media/image/image_0001.jpg'
+
+        with self.settings(IMGIX_DOMAINS=domains,
+                           IMGIX_WEB_PROXY=False,
+                           IMGIX_SIGN_KEY='abc123'):
+            rendered = render_template(
+                "{{% load imgix_tags %}}"
+                "{{% get_imgix '{0}' web_proxy=1 %}}".format(image_url)
+            )
+
+            expected = UrlBuilder(
+                domains,
+                sign_key='abc123',
+                sign_with_library_version=False,
+            ).create_url(image_url)
+
+            self.assertEqual(
+                rendered,
+                expected
             )
 
 
