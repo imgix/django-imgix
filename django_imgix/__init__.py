@@ -63,19 +63,14 @@ def get_settings():
 
 
 def get_alias(alias):
-    try:
-        aliases = settings.IMGIX_ALIASES
-    except AttributeError:
-        aliases_set = False
-    else:
-        aliases_set = True
+    aliases = getattr(settings, 'IMGIX_ALIASES', None)
 
-    if aliases_set and not aliases:
+    if not isinstance(aliases, dict):
         raise ImproperlyConfigured(
             "No aliases set. Please set IMGIX_ALIASES in settings.py"
         )
 
-    if not aliases or alias not in aliases:
+    if alias not in aliases:
         raise ImproperlyConfigured(
             "Alias {0} not found in IMGIX_ALIASES".format(alias)
         )
@@ -84,7 +79,7 @@ def get_alias(alias):
 
 
 def get_fm(image_url):
-    image_end = image_url.split('.')[-1]
+    _, image_end = image_url.split('.', 1)
     m = FM_PATTERN.match(image_end)
     if m:
         fm = m.group(1)
