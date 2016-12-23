@@ -111,42 +111,37 @@ DJANGO_IMGIX_KWARGS = frozenset([
     'alias',
     'aliases',
     'web_proxy',
+    'wh',
 ])
 
-
-"""
-Template tag for returning an image from imgix.
-
-This template tag takes the following arguments:
-1. image_url -- the image URL that we will pass onto Imgix
-2. any number of optional arguments, which Imgix can accept.
-For reference - https://www.imgix.com/docs/reference
-
-
-You must also put IMGIX_DOMAINS in your settings.py file.
-Thix can be a single domain, e.g.:
-
-        IMGIX_DOMAINS = 'test.imgix.net'
-
-or a list of domains, if you have sharding enabled in your Imgix account, e.g.:
-
-        IMGIX_DOMAINS = [
-            'test-1.imgix.net',
-            'test-2.imgix.net',
-            'test-3.imgix.net',
-        ]
-
-If you do indeed use sharding, you can choose a sharding strategy by setting
-IMGIX_SHARD_STRATEGY in your settings.py file.
-
-If you want to disable HTTPS support, put IMGIX_HTTPS = False in settings.py.
-
-
-This template tag returns a string that represents the Imgix URL for the image.
-"""
+NON_IMGIX_API_KWARGS = IMGIX_URL_BUILDER_KWARGS | DJANGO_IMGIX_KWARGS
 
 
 def get_imgix_url(image_url, alias=None, wh=None, **kwargs):
+    """
+    Returns an Imgix image URL.
+
+    In `kwargs`, keys that correspond to `django-imgix` settings will override them. They are:
+
+    - `use_https` overrides `IMGIX_HTTPS`
+    - `web_proxy` overrides `IMGIX_WEB_PROXY`
+    - `domains` overrides `IMGIX_DOMAINS`
+    - `sign_key` overrides `IMGIX_SIGN_KEY`
+    - `shard_strategy` overrides `IMGIX_SHARD_STRATEGY`
+    - `aliases` overrides `IMGIX_ALIASES`
+    - `format_detect` overrides `IMGIX_FORMAT_DETECT`
+
+    Others will be passed to the Imgix API. See https://www.imgix.com/docs/reference
+
+    This template tag returns a string that represents the Imgix URL for the image.
+
+    :param image_url: the image URL that we will pass onto Imgix
+    :param alias: An optional alias name corresponding to a key in IMGIX_ALIASES setting.
+    :param wh: An optional string in the format '600x400'.
+    :param kwargs: optional, arbitrary number of key-value pairs to override settings
+                   and pass to the Imgix API.
+    :returns: An Imgix URL
+    """
     _settings = get_settings()
     merged_settings = merge_dicts(_settings, kwargs)
 
@@ -154,7 +149,7 @@ def get_imgix_url(image_url, alias=None, wh=None, **kwargs):
         merged_settings.update(get_alias(alias))
 
     builder_kwargs = pick(IMGIX_URL_BUILDER_KWARGS, merged_settings)
-    create_url_opts = omit(IMGIX_URL_BUILDER_KWARGS | DJANGO_IMGIX_KWARGS, merged_settings)
+    create_url_opts = omit(NON_IMGIX_API_KWARGS, merged_settings)
     # Get builder instance
     builder = imgix.UrlBuilder(**builder_kwargs)
 
