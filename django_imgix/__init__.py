@@ -143,10 +143,11 @@ def get_imgix_url(image_url, alias=None, wh=None, **kwargs):
     :returns: An Imgix URL
     """
     _settings = get_settings()
-    merged_settings = merge_dicts(_settings, kwargs)
 
     if alias:
-        merged_settings.update(get_alias(alias))
+        merged_settings = merge_dicts(_settings, get_alias(alias), kwargs)
+    else:
+        merged_settings = merge_dicts(_settings, kwargs)
 
     builder_kwargs = pick(IMGIX_URL_BUILDER_KWARGS, merged_settings)
     create_url_opts = omit(NON_IMGIX_API_KWARGS, merged_settings)

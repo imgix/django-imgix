@@ -5,6 +5,8 @@ from django.core.exceptions import ImproperlyConfigured
 
 from imgix import UrlBuilder
 
+from .. import get_imgix_url
+
 
 def render_template(string, context=None):
         context = context or {}
@@ -32,15 +34,25 @@ class GeneralImgixTests(TestCase):
                 "https://test1.imgix.net/media/image/image_0001.jpg"
             )
 
-    def test_arguments_are_used_correctly(self):
+    def test_templatetag_escapes_url(self):
 
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
             rendered = render_template(
                 "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' h=100 w=250 lossless=1 auto='format' %}"
+                "{% get_imgix 'media/image/image_0001.jpg' w=600 h=400 %}"
             )
+            self.assertEqual(
+                rendered,
+                "https://test1.imgix.net/media/image/image_0001.jpg?h=400&amp;w=600"
+            )
+
+    def test_arguments_are_used_correctly(self):
+        domains = 'test1.imgix.net'
+
+        with self.settings(IMGIX_DOMAINS=domains):
+            rendered = get_imgix_url('media/image/image_0001.jpg', h=100, w=250, lossless=1, auto='format')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=100&lossless=1&w=250"
@@ -53,10 +65,7 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_HTTPS=https):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg')
             self.assertEqual(
                 rendered,
                 "http://test1.imgix.net/media/image/image_0001.jpg"
@@ -71,16 +80,13 @@ class GeneralImgixTests(TestCase):
         ]
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg')
             self.assertIn(
                 rendered,
                 [
-                "https://test1.imgix.net/media/image/image_0001.jpg",
-                "https://test2.imgix.net/media/image/image_0001.jpg",
-                "https://test3.imgix.net/media/image/image_0001.jpg",
+                    "https://test1.imgix.net/media/image/image_0001.jpg",
+                    "https://test2.imgix.net/media/image/image_0001.jpg",
+                    "https://test3.imgix.net/media/image/image_0001.jpg",
                 ]
             )
 
@@ -91,10 +97,7 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_SIGN_KEY=key):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?s=3ffb2810efc98cca7de5cd9c8ee6aec1"
@@ -109,10 +112,7 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=aliases):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' 'alias_one' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg', 'alias_one')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
@@ -127,17 +127,13 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=aliases):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' alias='alias_one' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg', alias='alias_one')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
             )
 
-    # Test that if there is a valid alias specified all other arguments will
-    # be ignored
+
     def test_alias_as_unnamed_argument_with_other_arguments(self):
 
         domains = 'test1.imgix.net'
@@ -147,19 +143,19 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=aliases):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' 'alias_one' "
-                "w=111 h=222 auto='override' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                'alias_one',
+                w=111,
+                h=222,
+                auto='override'
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=override&h=222&w=111"
             )
 
 
-    # Test that if there is a valid alias specified all other arguments will
-    # be ignored
     def test_alias_as_named_argument_with_other_arguments(self):
 
         domains = 'test1.imgix.net'
@@ -169,14 +165,16 @@ class GeneralImgixTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=aliases):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' alias='alias_one' "
-                "w=111 h=222 auto='override' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                alias='alias_one',
+                w=111,
+                h=222,
+                auto='override',
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=override&h=222&w=111"
             )
 
 
@@ -190,10 +188,12 @@ class GeneralImgixTests(TestCase):
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=aliases):
             try:
-                rendered = render_template(
-                    "{% load imgix_tags %}"
-                    "{% get_imgix 'media/image/image_0001.jpg' alias='alias_two' "
-                    "w=111 h=222 auto='override' %}"
+                rendered = get_imgix_url(
+                    'media/image/image_0001.jpg',
+                    alias='alias_two',
+                    w=111,
+                    h=222,
+                    auto='override'
                 )
             except ImproperlyConfigured as e:
                 self.assertEqual(
@@ -209,10 +209,12 @@ class GeneralImgixTests(TestCase):
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_ALIASES=None):
             try:
-                rendered = render_template(
-                    "{% load imgix_tags %}"
-                    "{% get_imgix 'media/image/image_0001.jpg' alias='alias_two' "
-                    "w=111 h=222 auto='override' %}"
+                rendered = get_imgix_url(
+                    'media/image/image_0001.jpg',
+                    alias='alias_two',
+                    w=111,
+                    h=222,
+                    auto='override'
                 )
             except ImproperlyConfigured as e:
                 self.assertEqual(
@@ -226,10 +228,9 @@ class GeneralImgixTests(TestCase):
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' wh='1024x768' "
-                " %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                wh='1024x768',
             )
             self.assertEqual(
                 rendered,
@@ -243,10 +244,12 @@ class GeneralImgixTests(TestCase):
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' wh='1024x768' "
-                "w=111 h=222 auto='format' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                wh='1024x768',
+                w=111,
+                h=222,
+                auto='format'
             )
             self.assertEqual(
                 rendered,
@@ -255,14 +258,15 @@ class GeneralImgixTests(TestCase):
 
 
     def test_wh_with_h_0_argument_overrides_w_but_not_h(self):
-
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' wh='1024x0' "
-                "w=111 h=222 auto='format' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                wh='1024x0',
+                w=111,
+                h=222,
+                auto='format'
             )
             self.assertEqual(
                 rendered,
@@ -275,10 +279,12 @@ class GeneralImgixTests(TestCase):
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' wh='0x768' "
-                "w=111 h=222 auto='format' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                wh='0x768',
+                w=111,
+                h=222,
+                auto='format'
             )
             self.assertEqual(
                 rendered,
@@ -291,10 +297,12 @@ class GeneralImgixTests(TestCase):
         domains = 'test1.imgix.net'
 
         with self.settings(IMGIX_DOMAINS=domains):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' wh='0x0' "
-                "w=111 h=222 auto='format' %}"
+            rendered = get_imgix_url(
+                'media/image/image_0001.jpg',
+                wh='0x0',
+                w=111,
+                h=222,
+                auto='format'
             )
             self.assertEqual(
                 rendered,
@@ -308,9 +316,9 @@ class GeneralImgixTests(TestCase):
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True,
                            IMGIX_SIGN_KEY=key):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'i.imgur.net/media/image/image_0001.jpg' fm='png' %}"
+            rendered = get_imgix_url(
+                'i.imgur.net/media/image/image_0001.jpg',
+                fm='png',
             )
             self.assertEqual(
                 rendered,
@@ -328,10 +336,7 @@ class DetectFormatTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?fm=jpg"
@@ -344,10 +349,7 @@ class DetectFormatTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpeg' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpeg')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpeg?fm=jpg"
@@ -376,10 +378,7 @@ class DetectFormatTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.gif' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.gif')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.gif?fm=gif"
@@ -392,10 +391,7 @@ class DetectFormatTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.webp' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.webp')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.webp?fm=webp"
@@ -412,10 +408,7 @@ class DetectFormatTests(TestCase):
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True,
                            IMGIX_ALIASES=aliases):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' 'alias_fm' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg', alias='alias_fm')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
@@ -428,10 +421,7 @@ class DetectFormatTests(TestCase):
 
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_DETECT_FORMAT=True):
-            rendered = render_template(
-                "{% load imgix_tags %}"
-                "{% get_imgix 'media/image/image_0001.jpg' fm='png' %}"
-            )
+            rendered = get_imgix_url('media/image/image_0001.jpg', fm='png')
             self.assertEqual(
                 rendered,
                 "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
@@ -445,11 +435,7 @@ class DetectFormatTests(TestCase):
         with self.settings(IMGIX_DOMAINS=domains,
                            IMGIX_WEB_PROXY=False,
                            IMGIX_SIGN_KEY='abc123'):
-            rendered = render_template(
-                "{{% load imgix_tags %}}"
-                "{{% get_imgix '{0}' web_proxy=1 %}}".format(image_url)
-            )
-
+            rendered = get_imgix_url(image_url, web_proxy=True)
             expected = UrlBuilder(
                 domains,
                 sign_key='abc123',

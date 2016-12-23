@@ -1,4 +1,5 @@
 from django import template
+from django.utils.html import escape
 
 from .. import get_imgix_url
 
@@ -32,4 +33,4 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
                    and pass to the Imgix API.
     :returns: An Imgix URL
     """
-    return get_imgix_url(image_url, alias=alias, wh=wh, **kwargs)
+    return escape(get_imgix_url(image_url, alias=alias, wh=wh, **kwargs))
