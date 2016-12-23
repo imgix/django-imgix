@@ -428,23 +428,45 @@ class DetectFormatTests(TestCase):
             )
 
 
-    def test_override_web_proxy_setting(self):
+    def test_web_proxy_without_sign_key_raises(self):
         domains = 'test1.imgix.net'
-        image_url = 'http://www.example.com.media/image/image_0001.jpg'
-
         with self.settings(IMGIX_DOMAINS=domains,
-                           IMGIX_WEB_PROXY=False,
-                           IMGIX_SIGN_KEY='abc123'):
-            rendered = get_imgix_url(image_url, web_proxy=True)
-            expected = UrlBuilder(
-                domains,
-                sign_key='abc123',
-                sign_with_library_version=False,
-            ).create_url(image_url)
+                           IMGIX_WEB_PROXY_SOURCE=True,
+                           IMGIX_SIGN_KEY=None):
+
+            with self.assertRaises(ImproperlyConfigured):
+                get_imgix_url('media/image/image_0001.jpg')
+
+
+    def test_alternative_source(self):
+        source_1_domains = 'test1.imgix.net'
+        source_2_domains = 'test2.imgix.net'
+
+        custom_settings = {
+            'IMGIX_SOURCES': {
+                '': {
+                    'domains': source_1_domains,
+                },
+                'proxy': {
+                    'domains': source_2_domains,
+                    'web_proxy': True,
+                    'sign_key': 'mock-sign-key',
+                }
+            }
+        }
+
+        with self.settings(**custom_settings):
+            main_url = get_imgix_url('media/image/image_0001.jpg')
 
             self.assertEqual(
-                rendered,
-                expected
+                'https://test1.imgix.net/media/image/image_0001.jpg',
+                main_url
             )
 
+            proxy_url = get_imgix_url('http://www.example.com/image1.jpg', source='proxy')
 
+            self.assertEqual(
+                'https://test2.imgix.net/http%3A%2F%2Fwww.example'
+                '.com%2Fimage1.jpg?s=565a44b136186478b1f2805e1e7c8e8c',
+                proxy_url
+            )

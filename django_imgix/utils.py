@@ -9,17 +9,6 @@ def pick(keys, _dict):
     return dict((key, _dict[key]) for key in key_set)
 
 
-def omit(keys, _dict):
-    """
-    Returns a new dictionary based on `_dict`,
-    restricting keys to those not in the iterable `keys`.
-    """
-
-    key_set = set(_dict.keys()) - set(keys)
-
-    return dict((key, _dict[key]) for key in key_set)
-
-
 def merge_dicts(*dicts):
     merged = {}
     for _dict in dicts:

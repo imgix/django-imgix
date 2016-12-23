@@ -14,7 +14,7 @@ from django.core.exceptions import ImproperlyConfigured
 
 import imgix
 
-from .utils import pick, omit, merge_dicts
+from .utils import pick, merge_dicts
 
 
 WH_PATTERN = re.compile(r'(\d+)x(\d+)$')
@@ -30,36 +30,72 @@ FM_MATCHES = {
     'webp': 'webp',
 }
 
+# Sentinel to detect unset setting,
+# to be omitted so that imgix-python
+# applies it's own defaults.
+USE_IMGIX_DEFAULT = {}
 
-def get_settings():
-    try:
-        _settings = {
-            'domains': getattr(settings, 'IMGIX_DOMAINS'),
-            'use_https': getattr(settings, 'IMGIX_HTTPS', True),
-            'sign_key': getattr(settings, 'IMGIX_SIGN_KEY', None),
-            'shard_strategy': getattr(settings, 'IMGIX_SHARD_STRATEGY', None),
-            'aliases': getattr(settings, 'IMGIX_ALIASES', None),
-            'format_detect': getattr(settings, 'IMGIX_DETECT_FORMAT', False),
-            'web_proxy': getattr(settings, 'IMGIX_WEB_PROXY_SOURCE', False),
-            'sign_with_library_version': getattr(settings, 'IMGIX_SIGN_WITH_LIBRARY_VERSION', False)
-        }
-    except AttributeError:
-        raise ImproperlyConfigured('Missing IMGIX_DOMAINS setting.')
 
-    # If these settings below are not present, we want to omit it the key
-    # so that `imgix-python` applies it's default.
+SOURCE_DEFAULTS = {
+    'domains': (),
+    'use_https': True,
+    'sign_key': None,
+    'shard_strategy': None,
+    'format_detect': False,
+    'web_proxy': False,
+    'sign_with_library_version': False,
+    'sign_mode': USE_IMGIX_DEFAULT,
+    'shard_strategy': USE_IMGIX_DEFAULT,
+}
 
-    try:
-        _settings['sign_mode'] = settings.IMGIX_SIGN_MODE
-    except AttributeError:
-        pass
+MAIN_SOURCE_KEY = ''
 
-    try:
-        _settings['shard_strategy'] = settings.IMGIX_SHARD_STRATEGY
-    except AttributeError:
-        pass
 
-    return _settings
+def omit_use_default_keys(_dict):
+    return dict(
+        (k, v)
+        for k, v in _dict.items()
+        if v is not USE_IMGIX_DEFAULT
+    )
+
+
+def get_sources():
+    # For compatibility with single-source settings.
+    main_source = {
+        'domains': getattr(settings, 'IMGIX_DOMAINS', ()),
+        'use_https': getattr(settings, 'IMGIX_HTTPS', True),
+        'sign_key': getattr(settings, 'IMGIX_SIGN_KEY', None),
+        'format_detect': getattr(settings, 'IMGIX_DETECT_FORMAT', False),
+        'web_proxy': getattr(settings, 'IMGIX_WEB_PROXY_SOURCE', False),
+        'sign_with_library_version': getattr(settings, 'IMGIX_SIGN_WITH_LIBRARY_VERSION', False),
+        'sign_mode': getattr(settings, 'IMGIX_SIGN_MODE', USE_IMGIX_DEFAULT),
+        'shard_strategy': getattr(settings, 'IMGIX_SHARD_STRATEGY', USE_IMGIX_DEFAULT),
+    }
+
+    sources = getattr(settings, 'IMGIX_SOURCES', {}).copy()
+
+    # Main source is under the empty string.
+    # If a source is already defined there, use that instead of the top-level
+    # settings variables.
+    sources.setdefault(MAIN_SOURCE_KEY, main_source)
+
+    for source_name, source_opts in sources.items():
+        source = merge_dicts(SOURCE_DEFAULTS, source_opts)
+
+        # Validate source.
+        if not source['domains']:
+            raise ValueError("Missing domains in source {0}".format(source_name))
+
+        if source['web_proxy'] and not source['sign_key']:
+            raise ImproperlyConfigured(
+                "In order to use a web proxy source, "
+                "add a 'sign_key' to source '{0}'".format(source_name)
+            )
+
+        # Remove keys where the corresponding value is USE_IMGIX_DEFAULT.
+        sources[source_name] = omit_use_default_keys(source)
+
+    return sources
 
 
 def get_alias(alias):
@@ -83,11 +119,7 @@ def get_fm(image_url):
     m = FM_PATTERN.match(image_end)
     if m:
         fm = m.group(1)
-        try:
-            format = FM_MATCHES[fm]
-            return format
-        except:
-            return False
+        return FM_MATCHES.get(fm, False)
     else:
         return False
 
@@ -101,71 +133,47 @@ IMGIX_URL_BUILDER_KWARGS = frozenset([
     'shard_strategy',
 ])
 
-DJANGO_IMGIX_KWARGS = frozenset([
-    'format_detect',
-    'alias',
-    'aliases',
-    'web_proxy',
-    'wh',
-])
 
-NON_IMGIX_API_KWARGS = IMGIX_URL_BUILDER_KWARGS | DJANGO_IMGIX_KWARGS
-
-
-def get_imgix_url(image_url, alias=None, wh=None, **kwargs):
+def get_imgix_url(image_url, alias=None, wh=None, source=MAIN_SOURCE_KEY, **kwargs):
     """
     Returns an Imgix image URL.
 
-    In `kwargs`, keys that correspond to `django-imgix` settings will override them. They are:
-
-    - `use_https` overrides `IMGIX_HTTPS`
-    - `web_proxy` overrides `IMGIX_WEB_PROXY`
-    - `domains` overrides `IMGIX_DOMAINS`
-    - `sign_key` overrides `IMGIX_SIGN_KEY`
-    - `shard_strategy` overrides `IMGIX_SHARD_STRATEGY`
-    - `aliases` overrides `IMGIX_ALIASES`
-    - `format_detect` overrides `IMGIX_FORMAT_DETECT`
-
-    Others will be passed to the Imgix API. See https://www.imgix.com/docs/reference
-
-    This template tag returns a string that represents the Imgix URL for the image.
-
-    :param image_url: the image URL that we will pass onto Imgix
+    :param image_url: the image URL that will be passed to Imgix
     :param alias: An optional alias name corresponding to a key in IMGIX_ALIASES setting.
     :param wh: An optional string in the format '600x400'.
+    :param source: An optional string that determines the source to use. Defaults to the
+                   main source.
     :param kwargs: optional, arbitrary number of key-value pairs to override settings
                    and pass to the Imgix API.
+                   See https://www.imgix.com/docs/reference
     :returns: An Imgix URL
     """
-    _settings = get_settings()
 
-    if alias:
-        merged_settings = merge_dicts(_settings, get_alias(alias), kwargs)
-    else:
-        merged_settings = merge_dicts(_settings, kwargs)
-
-    builder_kwargs = pick(IMGIX_URL_BUILDER_KWARGS, merged_settings)
-    create_url_opts = omit(NON_IMGIX_API_KWARGS, merged_settings)
-    # Get builder instance
-    builder = imgix.UrlBuilder(**builder_kwargs)
+    create_url_opts = merge_dicts(
+        get_alias(alias) if alias else {},
+        kwargs
+    )
 
     # Has the wh argument been passed? If yes,
     # set w and h arguments accordingly
     if wh:
         create_url_opts.update(parse_wh(wh))
 
-    # Is format detection on? If yes, use the appropriate image format.
+    source_opts = get_sources()[source]
 
-    if merged_settings['format_detect'] and 'fm' not in create_url_opts:
+    # Is format detection on? If yes, use the appropriate image format.
+    if source_opts['format_detect'] and 'fm' not in create_url_opts:
         fm = get_fm(image_url)
         if fm:
             create_url_opts['fm'] = fm
 
     # Take only the relative path of the URL if the source is not a Web Proxy Source
-    if not merged_settings['web_proxy']:
+    if not source_opts['web_proxy']:
         image_url = urlparse(image_url).path
 
     # Build the Imgix URL
+    builder_kwargs = pick(IMGIX_URL_BUILDER_KWARGS, source_opts)
+    builder = imgix.UrlBuilder(**builder_kwargs)
     url = builder.create_url(image_url, create_url_opts)
     return url
 
