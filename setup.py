@@ -19,8 +19,8 @@ setup(
     author='Pancentric Ltd',
     author_email='devops@pancentric.com',
     install_requires=[
-        'django>=1.4.0',
-        'imgix>=1.0.0',
+        'Django==1.11.11',
+        'imgix==1.1.2',
     ],
     classifiers=[
         'Environment :: Web Environment',

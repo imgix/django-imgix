@@ -5,4 +5,5 @@ django_imgix.egg-info
 .coverage
 build
 dist
+.idea/
 
