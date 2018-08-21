@@ -12,6 +12,10 @@ from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 from django import template
+try:
+    from django.utils.safestring import mark_safe
+except ImportError:
+    mark_safe = lambda s: s
 
 import imgix
 
@@ -189,4 +193,4 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
 
     # Build the Imgix URL
     url = builder.create_url(image_url, arguments)
-    return url
+    return mark_safe(url)

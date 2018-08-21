@@ -7,6 +7,19 @@ MEDIA_URL = '/media/'
 
 DATABASE_ENGINE = 'sqlite3'
 
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                "django.contrib.auth.context_processors.auth",
+            ],
+        },
+    },
+]
+
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
