@@ -1,65 +1,72 @@
-Django imgix
-============
+<!-- ix-docs-ignore -->
+![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
-[![Build Status](https://travis-ci.org/pancentric/django-imgix.png?branch=master)](https://travis-ci.org/pancentric/django-imgix)
+An application for integrating [imgix](https://www.imgix.com/) into Django templates.
 
-A simple Django application for creating [Imgix](https://www.imgix.com/ "Imgix") formatted image links in your templates
+[![Version](https://badge.fury.io/py/django-imgix.svg)](https://pypi.org/project/django-imgix/)
+[![Build Status](https://travis-ci.org/pancentric/django-imgix.svg?branch=master)](https://travis-ci.org/imgix/django-imgix)
+![Downloads](https://img.shields.io/pypi/dm/django-imgix)
+![Python Versions](https://img.shields.io/pypi/pyversions/django-imgix)
+[![License](https://img.shields.io/github/license/imgix/django-imgix)](https://github.com/imgix/django-imgix/blob/master/LICENSE)
 
+---
+<!-- /ix-docs-ignore -->
 
-Installation
-------------
+- [Installation](#installation)
+- [Configuration](#configuration)
+	- [IMGIX_DOMAINS](#imgix_domains-(required))
+	- [IMGIX_HTTPS](#imgix_https)
+	- [IMGIX_SIGN_KEY](#imgix_sign_key)
+	- [IMGIX_WEB_PROXY_SOURCE](#imgix_web_proxy_source)
+	- [IMGIX_DETECT_FORMAT](#imgix_detect_format)
+	- [IMGIX_ALIASES](#imgix_aliases)
+	- [Aliases](#aliases)
+- [Usage](#usage)
+
+## Installation
 
 Dependencies:
-This app requires Django > 1.4 and imgix>0.1
+This app requires Django > 1.4 and imgix > 0.1
 
+1. Run ```pip install django-imgix```
+2. Add ```'django_imgix'``` to your ```INSTALLED_APPS```:
 
-1. Run ```  pip install django-imgix  ```
-2. Add ``` 'django_imgix' ``` to your ``` INSTALLED_APPS ```:
-
-
-
-
-```
-	INSTALLED_APPS = (
-		...
-		'django_imgix',
-	)
+```python
+INSTALLED_APPS = (
+	...
+	'django_imgix',
+)
 ```
 
+## Configuration
 
-----------
-
-
-Configuration
--------------
 There are a few settings you can use to configure how django-imgix works:
 
-**IMGIX_DOMAINS** (*required*)
+### IMGIX_DOMAINS (*required*)
 
-Give the domain name, or list of domain names, that you have registered with Imgix:
+Give the domain name, or list of domain names, that you have registered with imgix:
 
-```
+```python
 IMGIX_DOMAINS = 'my-domain.imgix.net'
-...
+
 or
-...
+
 IMGIX_DOMAINS = [
 	'my-domain-1.imgix.net',
 	'my-domain-2.imgix.net',
 	'my-domain-3.imgix.net',
-	]
+]
 ```
 
-**IMGIX_HTTPS**
+### IMGIX_HTTPS
 
 Boolean value, defaults to `True` if not specified. If set to `False` it disables HTTPS support.
 
+### IMGIX_SIGN_KEY
 
-**IMGIX_SIGN_KEY**
+If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your imgix.com account. This will generate a secret key that you need to specify here, e.g.
 
-If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your Imgix.com account. This will generate a secret key that you need to specify here, e.g.
-
-```
+```python
 IMGIX_SIGN_KEY = 'jUIrLPuMEm2aCRj'
 ```
 
@@ -67,45 +74,37 @@ This will make a hash from the image url and all parameters that you have suppli
 
 `https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
 
+### IMGIX_WEB_PROXY_SOURCE
 
-**IMGIX_WEB_PROXY_SOURCE**
+Boolean value, defaults to `False` if not specified. If set to `True` image urls will be generated using the full original image URL, as needed for a Web Proxy Source.
+Note that imgix requires all your URLs to be signed if you are using a Web Proxy Source (do that by specifying **IMGIX_SIGN_KEY**).
 
-Boolean value, defaults to `False` if not specified. If set to `True` image urls will be generated using the full original image url, as needed for a Web Proxy Source.
-Note that Imgix requires all your urls to be signed if you are using a Web Proxy Source (do that by specifying **IMGIX_SIGN_KEY**).
+### IMGIX_DETECT_FORMAT
 
-
-**IMGIX_DETECT_FORMAT**
-
-Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=image_extension` attribute to the image url, where `image_extension`  is one of the formats listed [here](https://www.imgix.com/docs/reference/format#param-fm "Imgix fm parameter")
-
+Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=` parameter to the image URL, where the value is equal to one of several [valid formats](https://www.imgix.com/docs/reference/format#param-fm).
 
 Example:
-```
+
+```python
 {% load imgix_tags %}
 {% get_imgix '/media/images/dsc_0001.jpg' w=1280 h=720 %}
 ```
-will produce
+
+will produce:
 
 `https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280`
 
-
 Currently supported image formats for IMGIX_DETECT_FORMAT are jpg, jpeg, png, gif, jp2, jxr and webp.
 
-
-**IMGIX_ALIASES**
+### IMGIX_ALIASES
 
 Read about aliases in the **Usage** section below.
 
+## Usage
 
-----------
+Django-imgix's functionality comes in the form of a template tag, `get_imgix`, that gets an image URL as its first argument and then an N number of optional arguments:
 
-
-Usage
------
-
-Django-imgix's functionality comes in the form of a template tag, `get_imgix`, that gets an image url as its first argument and then an N number of optional arguments:
-
-```
+```python
 {% load imgix_tags %}
 <img src="{% get_imgix 'image_url' key=value ... %}"/>
 ```
@@ -113,10 +112,9 @@ Django-imgix's functionality comes in the form of a template tag, `get_imgix`, t
 Your `'image_url'` should be a relative URL, as it will be appended to a domain specified in `IMGIX_DOMAINS`, to form an absolute URL.
 
 You can add as many `key=value` pairs as you want. Each `key=value` pair results in a url parameter
-that Imgix can recognise and use to generate your thumbnail.
+that imgix can recognise and use to generate your thumbnail.
 
-For a full list of supported parameters, see [here](https://www.imgix.com/docs/reference/ "Imgix API reference")
-
+For a full list of supported parameters, see [imgix's API docs](https://www.imgix.com/docs/reference/)
 
 There is a special argument, `wh=WIDTHxHEIGHT`, which is made specifically so that transition from other image processing libraries such as **easy_thumbnails** is easier.
 For example,
@@ -139,21 +137,22 @@ will result in
 
 `http://my-domain.imgix.net/media/images/dsc_0001.jpg?h=555&w=1280`
 
-#### **Aliases**
+### Aliases
 
 If you don't want to list all your `key=value` parameters inline all the time, you can group them into aliases.
 
 To do that, first specify the aliases in your settings file:
-```
+
+```python
 IMGIX_ALIASES = {
         'alias_one': {'w': 200, 'h': 300, 'lossless': 1, 'auto': 'format'},
         'alias_two': {'w': 450, 'h': 160, 'fm':'jpg', 'q': 70 },
     }
-
 ```
 
 Then, in your template, either simply provide the alias name as the first unnamed argument, or use `alias='alias_name'`:
-```
+
+```python
 {% load imgix_tags %}
 <img src="{% get_imgix 'image_url' 'alias_one' %}"/>
 ... or ...
@@ -161,5 +160,3 @@ Then, in your template, either simply provide the alias name as the first unname
 ```
 
 Providing an alias means that any other arguments will be ignored.
-
-
