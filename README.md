@@ -1,9 +1,9 @@
 <!-- ix-docs-ignore -->
 ![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
-An application for integrating [imgix](https://www.imgix.com/) into Django templates.
+`django-imgix` is an app for integrating [imgix](https://www.imgix.com/) into Django sites.
 
-[![Version](https://badge.fury.io/py/django-imgix.svg)](https://pypi.org/project/django-imgix/)
+[![Version](https://img.shields.io/pypi/v/django-imgix.svg)](https://pypi.org/project/django-imgix/)
 [![Build Status](https://travis-ci.org/pancentric/django-imgix.svg?branch=master)](https://travis-ci.org/imgix/django-imgix)
 ![Downloads](https://img.shields.io/pypi/dm/django-imgix)
 ![Python Versions](https://img.shields.io/pypi/pyversions/django-imgix)
@@ -14,14 +14,14 @@ An application for integrating [imgix](https://www.imgix.com/) into Django templ
 
 - [Installation](#installation)
 - [Configuration](#configuration)
-	- [IMGIX_DOMAINS](#imgix_domains-(required))
-	- [IMGIX_HTTPS](#imgix_https)
-	- [IMGIX_SIGN_KEY](#imgix_sign_key)
-	- [IMGIX_WEB_PROXY_SOURCE](#imgix_web_proxy_source)
-	- [IMGIX_DETECT_FORMAT](#imgix_detect_format)
-	- [IMGIX_ALIASES](#imgix_aliases)
-	- [Aliases](#aliases)
+	- [`IMGIX_DOMAINS` (required)](#imgixdomains-required)
+	- [`IMGIX_HTTPS`](#imgixhttps)
+	- [`IMGIX_SIGN_KEY`](#imgixsignkey)
+	- [`IMGIX_WEB_PROXY_SOURCE`](#imgixwebproxysource)
+	- [`IMGIX_DETECT_FORMAT`](#imgixdetectformat)
+	- [`IMGIX_ALIASES`](#imgixaliases)
 - [Usage](#usage)
+	- [Aliases](#aliases)
 
 ## Installation
 
@@ -42,7 +42,7 @@ INSTALLED_APPS = (
 
 There are a few settings you can use to configure how django-imgix works:
 
-### IMGIX_DOMAINS (*required*)
+### `IMGIX_DOMAINS` (*required*)
 
 Give the domain name, or list of domain names, that you have registered with imgix:
 
@@ -58,11 +58,11 @@ IMGIX_DOMAINS = [
 ]
 ```
 
-### IMGIX_HTTPS
+### `IMGIX_HTTPS`
 
 Boolean value, defaults to `True` if not specified. If set to `False` it disables HTTPS support.
 
-### IMGIX_SIGN_KEY
+### `IMGIX_SIGN_KEY`
 
 If you want to produce signed URLs you need to enable secure URLs in the 'Source' tab in your imgix.com account. This will generate a secret key that you need to specify here, e.g.
 
@@ -74,12 +74,12 @@ This will make a hash from the image url and all parameters that you have suppli
 
 `https://my-domain.imgix.net/media/images/dsc_0001.jpg?fm=jpg&h=720&w=1280s=976ae7332b279147ac0812c1770db07f`
 
-### IMGIX_WEB_PROXY_SOURCE
+### `IMGIX_WEB_PROXY_SOURCE`
 
 Boolean value, defaults to `False` if not specified. If set to `True` image urls will be generated using the full original image URL, as needed for a Web Proxy Source.
 Note that imgix requires all your URLs to be signed if you are using a Web Proxy Source (do that by specifying **IMGIX_SIGN_KEY**).
 
-### IMGIX_DETECT_FORMAT
+### `IMGIX_DETECT_FORMAT`
 
 Boolean value, defaults to `False` if not specified. If set to `True` django-imgix will automatically detect popular image extensions and apply the `fm=` parameter to the image URL, where the value is equal to one of several [valid formats](https://www.imgix.com/docs/reference/format#param-fm).
 
@@ -96,7 +96,7 @@ will produce:
 
 Currently supported image formats for IMGIX_DETECT_FORMAT are jpg, jpeg, png, gif, jp2, jxr and webp.
 
-### IMGIX_ALIASES
+### `IMGIX_ALIASES`
 
 Read about aliases in the **Usage** section below.
 
