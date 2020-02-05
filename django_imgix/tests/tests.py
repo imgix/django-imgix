@@ -3,6 +3,7 @@ from django.test import TestCase
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from django_imgix.templatetags._version import __version__
 
 def render_template(string, context=None):
         context = context or {}
@@ -26,7 +27,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg"
+                "https://test1.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}".format(__version__)
             )
 
     def test_arguments_are_used_correctly(self):
@@ -40,7 +41,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=100&lossless=1&w=250"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=100&ixlib=django-{0}&lossless=1&w=250".format(__version__)
             )
 
     def test_no_https(self):
@@ -56,7 +57,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "http://test1.imgix.net/media/image/image_0001.jpg"
+                "http://test1.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}".format(__version__)
             )
 
     def test_sharding(self):
@@ -75,9 +76,9 @@ class GeneralImgixTests(TestCase):
             self.assertIn(
                 rendered,
                 [
-                "https://test1.imgix.net/media/image/image_0001.jpg",
-                "https://test2.imgix.net/media/image/image_0001.jpg",
-                "https://test3.imgix.net/media/image/image_0001.jpg",
+                "https://test1.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}".format(__version__),
+                "https://test2.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}".format(__version__),
+                "https://test3.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}".format(__version__),
                 ]
             )
 
@@ -94,7 +95,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?s=3ffb2810efc98cca7de5cd9c8ee6aec1"
+                "https://test1.imgix.net/media/image/image_0001.jpg?ixlib=django-{0}&s=267c8db43b767a9a580c686530fae272".format(__version__)
             )
 
     def test_alias_as_unnamed_argument(self):
@@ -112,7 +113,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&ixlib=django-{0}&w=150".format(__version__)
             )
 
     def test_alias_as_named_argument(self):
@@ -130,7 +131,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&ixlib=django-{0}&w=150".format(__version__)
             )
 
     # Test that if there is a valid alias specified all other arguments will
@@ -151,7 +152,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&ixlib=django-{0}&w=150".format(__version__)
             )
 
 
@@ -173,7 +174,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&w=150"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=350&ixlib=django-{0}&w=150".format(__version__)
             )
 
 
@@ -230,7 +231,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?h=768&w=1024"
+                "https://test1.imgix.net/media/image/image_0001.jpg?h=768&ixlib=django-{0}&w=1024".format(__version__)
             )
 
 
@@ -247,7 +248,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=768&w=1024"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=768&ixlib=django-{0}&w=1024".format(__version__)
             )
 
 
@@ -263,7 +264,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=222&w=1024"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=222&ixlib=django-{0}&w=1024".format(__version__)
             )
 
 
@@ -279,7 +280,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=768&w=111"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=768&ixlib=django-{0}&w=111".format(__version__)
             )
 
 
@@ -295,7 +296,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=222&w=111"
+                "https://test1.imgix.net/media/image/image_0001.jpg?auto=format&h=222&ixlib=django-{0}&w=111".format(__version__)
             )
 
     def test_web_proxy_setting_keeps_full_url(self):
@@ -311,7 +312,7 @@ class GeneralImgixTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/i.imgur.net/media/image/image_0001.jpg?fm=png&s=e999c394eb69bad44b3f605fcf96f4bf"
+                "https://test1.imgix.net/i.imgur.net/media/image/image_0001.jpg?fm=png&ixlib=django-{0}&s=e6f77fa9f124368fa171941cae98f97d".format(__version__)
             )
 
 
@@ -331,7 +332,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?fm=jpg"
+                "https://test1.imgix.net/media/image/image_0001.jpg?fm=jpg&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -347,7 +348,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpeg?fm=jpg"
+                "https://test1.imgix.net/media/image/image_0001.jpeg?fm=jpg&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -363,7 +364,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.png?fm=png"
+                "https://test1.imgix.net/media/image/image_0001.png?fm=png&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -379,7 +380,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.gif?fm=gif"
+                "https://test1.imgix.net/media/image/image_0001.gif?fm=gif&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -395,7 +396,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.webp?fm=webp"
+                "https://test1.imgix.net/media/image/image_0001.webp?fm=webp&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -415,7 +416,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
+                "https://test1.imgix.net/media/image/image_0001.jpg?fm=png&ixlib=django-{0}".format(__version__)
             )
 
 
@@ -431,7 +432,7 @@ class DetectFormatTests(TestCase):
             )
             self.assertEqual(
                 rendered,
-                "https://test1.imgix.net/media/image/image_0001.jpg?fm=png"
+                "https://test1.imgix.net/media/image/image_0001.jpg?fm=png&ixlib=django-{0}".format(__version__)
             )
 
 
