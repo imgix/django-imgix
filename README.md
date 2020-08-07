@@ -4,10 +4,10 @@
 `django-imgix` is an app for integrating [imgix](https://www.imgix.com/) into Django sites.
 
 [![Version](https://img.shields.io/pypi/v/django-imgix.svg)](https://pypi.org/project/django-imgix/)
-[![Build Status](https://travis-ci.org/pancentric/django-imgix.svg?branch=master)](https://travis-ci.org/imgix/django-imgix)
+[![Build Status](https://travis-ci.org/pancentric/django-imgix.svg?branch=main)](https://travis-ci.org/imgix/django-imgix)
 ![Downloads](https://img.shields.io/pypi/dm/django-imgix)
 ![Python Versions](https://img.shields.io/pypi/pyversions/django-imgix)
-[![License](https://img.shields.io/github/license/imgix/django-imgix)](https://github.com/imgix/django-imgix/blob/master/LICENSE)
+[![License](https://img.shields.io/github/license/imgix/django-imgix)](https://github.com/imgix/django-imgix/blob/main/LICENSE)
 
 ---
 <!-- /ix-docs-ignore -->
