@@ -1,15 +1,12 @@
 language: python
-python: 2.7
+python: 3.7
 install:
   - pip install tox
 env:
   - TOXENV=py27-django1.4
   - TOXENV=py27-django1.7
-  - TOXENV=py34-django1.7
   - TOXENV=py27-django1.8
-  - TOXENV=py34-django1.8
-  - TOXENV=py27-django1.11
-  - TOXENV=py34-django1.11
-  - TOXENV=py34-django2.0
+  - TOXENV=py37-django1.7
+  - TOXENV=py37-django1.8
 script:
   - tox -e $TOXENV
