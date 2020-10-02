@@ -16,9 +16,11 @@ setup(
     license='ISC',
     description='An app for integrating imgix into Django sites',
     long_description=README,
-    url='https://github.com/pancentric/django-imgix',
+    url='https://github.com/imgix/django-imgix',
     author='Pancentric Ltd',
     author_email='devops@pancentric.com',
+    maintainer='imgix',
+    maintainer_email='sdk@imgix.com',
     install_requires=[
         'django<2.0.0',
         'imgix<2.0.0',
