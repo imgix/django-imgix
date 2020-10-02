@@ -17,8 +17,9 @@ try:
 except ImportError:
     mark_safe = lambda s: s
 
-import imgix
+from ._version import __version__
 
+import imgix
 
 register = template.Library()
 
@@ -97,8 +98,8 @@ def get_fm(image_url):
 Template tag for returning an image from imgix.
 
 This template tag takes the following arguments:
-1. image_url -- the image URL that we will pass onto Imgix
-2. any number of optional arguments, which Imgix can accept.
+1. image_url -- the image URL that we will pass onto imgix
+2. any number of optional arguments, which imgix can accept.
 For reference - https://www.imgix.com/docs/reference
 
 
@@ -107,7 +108,7 @@ Thix can be a single domain, e.g.:
 
         IMGIX_DOMAINS = 'test.imgix.net'
 
-or a list of domains, if you have sharding enabled in your Imgix account, e.g.:
+or a list of domains, if you have sharding enabled in your imgix account, e.g.:
 
         IMGIX_DOMAINS = [
             'test-1.imgix.net',
@@ -121,7 +122,7 @@ IMGIX_SHARD_STRATEGY in your settings.py file.
 If you want to disable HTTPS support, put IMGIX_HTTPS = False in settings.py.
 
 
-This template tag returns a string that represents the Imgix URL for the image.
+This template tag returns a string that represents the imgix URL for the image.
 """
 
 
@@ -191,6 +192,9 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
     if not web_proxy:
         image_url = urlparse(image_url).path
 
-    # Build the Imgix URL
+    # URLs should append an 'ixlib=django-<version_number>' parameter
+    arguments['ixlib'] = "django-" + __version__
+
+    # Build the imgix URL
     url = builder.create_url(image_url, arguments)
     return mark_safe(url)
