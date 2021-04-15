@@ -7,7 +7,7 @@ except ImportError:
     # Python 3 location
     from urllib.parse import urlparse
 
-from django.utils import six
+import six
 from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
