@@ -23,8 +23,7 @@ setup(
     maintainer_email='sdk@imgix.com',
     install_requires=[
         'django==3.2',
-        'imgix==3.2.1',
-        'six==1.15.0'
+        'imgix<2.0.0',
     ],
     classifiers=[
         'Environment :: Web Environment',
@@ -39,6 +38,7 @@ setup(
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
