@@ -7,10 +7,9 @@ import re
 import subprocess
 from operator import itemgetter
 
-from django.utils import six
 
-re_line = re.compile(six.b(r'(\d+)\s+(\d+)\s+[^<]+$'))
-re_author = re.compile(six.b(r'.+<(.+)>$'))
+re_line = re.compile(r'(\d+)\s+(\d+)\s+[^<]+$')
+re_author = re.compile(r'.+<(.+)>$')
 
 
 def get_authors(exclude_primary_author=True):
@@ -38,8 +37,8 @@ def get_authors(exclude_primary_author=True):
         if not match:
             continue
         author_emails = match.group(1)
-        for email in author_emails.split(six.b(',')):
-            if six.b('@') not in email:
+        for email in author_emails.split(b','):
+            if b'@' not in email:
                 continue
             if email in emails:
                 remove_author = emails[email]

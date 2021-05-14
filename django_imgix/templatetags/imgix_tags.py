@@ -7,7 +7,6 @@ except ImportError:
     # Python 3 location
     from urllib.parse import urlparse
 
-import six
 from django.template import TemplateSyntaxError
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
@@ -162,7 +161,7 @@ def get_imgix(image_url, alias=None, wh=None, **kwargs):
     # set w and h arguments accordingly
     if wh:
         size = wh
-        if isinstance(size, six.string_types):
+        if isinstance(size, str):
             m = WH_PATTERN.match(size)
             if m:
                 w = int(m.group(1))

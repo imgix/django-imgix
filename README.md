@@ -57,7 +57,6 @@ IMGIX_DOMAINS = [
 	'my-domain-3.imgix.net',
 ]
 ```
-
 ### `IMGIX_HTTPS`
 
 Boolean value, defaults to `True` if not specified. If set to `False` it disables HTTPS support.
