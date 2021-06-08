@@ -22,7 +22,7 @@ setup(
     maintainer='imgix',
     maintainer_email='sdk@imgix.com',
     install_requires=[
-        'django==3.2',
+        'django>=3.2,>3.3',
         'imgix<2.0.0',
     ],
     classifiers=[
