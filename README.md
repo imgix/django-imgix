@@ -1,10 +1,15 @@
 <!-- ix-docs-ignore -->
+> [DEPRECATED]
+> 
+> _This project has reached the end of its development._
+> _Feel free to browse the code, but please use other solutions for integrating imgix into your Django projects._
+
 ![imgix logo](https://assets.imgix.net/sdk-imgix-logo.svg)
 
 `django-imgix` is an app for integrating [imgix](https://www.imgix.com/) into Django sites.
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
 [![Version](https://img.shields.io/pypi/v/django-imgix.svg)](https://pypi.org/project/django-imgix/)
-[![Build Status](https://travis-ci.com/imgix/django-imgix.svg?branch=main)](https://travis-ci.com/imgix/django-imgix)
 ![Downloads](https://img.shields.io/pypi/dm/django-imgix)
 ![Python Versions](https://img.shields.io/pypi/pyversions/django-imgix)
 [![License](https://img.shields.io/github/license/imgix/django-imgix)](https://github.com/imgix/django-imgix/blob/main/LICENSE)
